@@ -1,11 +1,8 @@
-'''
-Created on Jul 11, 2014
+#!/usr/bin/env python3.8
 
-@author: Chris
-'''
-from demoinfocsgo.demofile import DemoFile, DemoMessage
-from demoinfocsgo.proto.netmessages_pb2 import *
-from demoinfocsgo.proto.cstrike15_usermessages_pb2 import *
+from .DemoStructs import DemoMessage, DemoFile
+from .proto.csgo.netmessages_pb2 import *
+from .proto.csgo.cstrike15_usermessages_pb2 import *
 import struct
 
 _GAMEEVENT_TYPES = {2:"val_string",
@@ -127,7 +124,7 @@ class DemoDump(object):
         finished = False
         while not finished:
             cmd, tick, playerslot = self.demofile.read_cmd_header()
-            # print "%i - %i - % i " % (cmd, tick, playerslot)
+            # print("%i - %i - % i " % (cmd, tick, playerslot))
             if cmd == DemoMessage.SYNCTICK:
                 continue
             elif cmd == DemoMessage.STOP:
@@ -234,17 +231,17 @@ class DemoDump(object):
     def _send_table(self, cmd, data):
         table = CSVCMsg_SendTable()
         table.ParseFromString(data)
-        print "%s: is end: %r, needs_decoder: %r" % (table.net_table_name, table.is_end, table.needs_decoder)
+        print("%s: is end: %r, needs_decoder: %r" % (table.net_table_name, table.is_end, table.needs_decoder))
         for prop in table.props:
-            print "Name: %s type: %i" % (prop.var_name, prop.type)
-        print "-------------------------------"
+            print("Name: %s type: %i" % (prop.var_name, prop.type))
+        print("-------------------------------")
         
     def _handle_classinfo(self, cmd, data):
         info = CSVCMsg_ClassInfo()
         info.ParseFromString(data)
-        #print "CLASS INFO COUNT: %s, CREATE ON CLIENT: %r" % (len(info.classes), info.create_on_client)
+        #print("CLASS INFO COUNT: %s, CREATE ON CLIENT: %r" % (len(info.classes), info.create_on_client))
         #for c in info.classes:
-        #    print "%i: %s, %s" % (c.class_id, c.data_table_name, c.class_name)
+        #    print("%i: %s, %s" % (c.class_id, c.data_table_name, c.class_name))
                 
     def _handle_demo_packet(self):
         info = self.demofile.read_cmd_info()

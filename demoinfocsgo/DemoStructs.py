@@ -1,12 +1,9 @@
-'''
-Created on Jul 11, 2014
-
-@author: Chris
-'''
-import os
-import struct
+#!/usr/bin/env python3.8
 
 SUPPORTED_PROTOCOL = 4
+
+from os import SEEK_END, SEEK_SET
+import struct
 
 class DemoHeader(object):
     '''
@@ -16,13 +13,13 @@ class DemoHeader(object):
                  servername, clientname, mapname, gamedirectory,
                  playback_time, playback_ticks, playback_frames,
                  signonlength):
-        self.demofile = demofile.rstrip('\0')
+        self.demofile = demofile.rstrip(b'\0')
         self.demoprotocol = demoprotocol
         self.networkprotocol = networkprotocol
-        self.servername = servername.rstrip('\0')
-        self.clientname = clientname.rstrip('\0')
-        self.mapname = mapname.rstrip('\0')
-        self.gamedirectory = gamedirectory.rstrip('\0')
+        self.servername = servername.rstrip(b'\0')
+        self.clientname = clientname.rstrip(b'\0')
+        self.mapname = mapname.rstrip(b'\0')
+        self.gamedirectory = gamedirectory.rstrip(b'\0')
         self.playback_time = playback_time
         self.playback_ticks = playback_ticks
         self.playback_frames = playback_frames
@@ -64,9 +61,9 @@ class DemoFile(object):
         self.file = open(filename, "rb")
         if self.file:
             
-            self.file.seek(0, os.SEEK_END)  # get file size
+            self.file.seek(0, SEEK_END)  # get file size
             self.length = self.file.tell()
-            self.file.seek(0, os.SEEK_SET)  # get back to beginning
+            self.file.seek(0, SEEK_SET)  # get back to beginning
         
             # parse header
             struct_fmt = "@8sii260s260s260s260sfiii"
