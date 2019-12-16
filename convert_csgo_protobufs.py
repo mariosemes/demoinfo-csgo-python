@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.8
 
-#sudo apt install protobuf-compiler
+#sudo apt install protobuf-compiler 2to3
 
 from os import path, mkdir, rmdir
 import subprocess
@@ -37,6 +37,8 @@ def main():
     make_python_imported_folder(OUTPUT_FOLDER)
     convert_folder('csgo')
     convert_folder('google')
+
+    subprocess.call(['2to3', OUTPUT_FOLDER, '-w', '-n'])
 
 if __name__ == '__main__':
     main()
