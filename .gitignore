@@ -1,9 +1,3 @@
-.project
-.settings/
-.pydevproject
 *.pyc
-
-
 demos/*.*
-*.dem
-tests/
+protobufs/*
