@@ -51,7 +51,6 @@ class DemoFile(object):
         Constructor
         '''
         self.demoheader = None
-        self.offset = 0
         
     def open(self, filename):
         '''
@@ -60,20 +59,9 @@ class DemoFile(object):
         '''
         self.file = open(filename, "rb")
         if self.file:
-            
-            self.file.seek(0, SEEK_END)  # get file size
-            self.length = self.file.tell()
-            self.file.seek(0, SEEK_SET)  # get back to beginning
-        
             # parse header
-            struct_fmt = "@8sii260s260s260s260sfiii"
-            struct_len = struct.calcsize(struct_fmt)
-            struct_unpack = struct.Struct(struct_fmt)
-            data = self.file.read(struct_len)
-            read = struct_unpack.unpack_from(data, 0)
-            self.offset = struct_len
-            self.demoheader = DemoHeader(*list(read))
-            
+            demoheader_data = self.read_struct_from_file("@8sii260s260s260s260sfiii")
+            self.demoheader = DemoHeader(*list(demoheader_data))
             
             if self.demoheader.demoprotocol != SUPPORTED_PROTOCOL:
                 # print "This protocol is not supported"
@@ -87,12 +75,11 @@ class DemoFile(object):
         '''
         Reads the header of a cmd.
         '''
-        cmd = self.read_struct_from_file("B")
+        cmd = self.read_struct_from_file("B")[0]
         if cmd <= 0:
             cmd = DemoMessage.STOP
             return cmd, 0, 0
-        tick = self.read_struct_from_file("i")
-        playerslot = self.read_struct_from_file("B")
+        tick, playerslot = self.read_struct_from_file("iB")
         return cmd, tick, playerslot
     
     def read_raw_data(self):
@@ -100,14 +87,11 @@ class DemoFile(object):
         Reads the next int and then reads the amount of bytes in that int.
         Returns a tuple of (size, buffer)
         '''
-        size = self.read_struct_from_file("@i")
+        size = self.read_struct_from_file("@i")[0]
         if size <= 0:
             return 0, None
         
         data = self.file.read(size)
-        
-        self.offset = self.offset + size
-        self.file.seek(self.offset)
         return size, data
         
     def read_user_cmd(self):
@@ -115,7 +99,7 @@ class DemoFile(object):
         Reads a user cmd.
         Returns a tuple of (outgoing(?), size, buffer)
         '''
-        outgoing = self.read_struct_from_file("i")
+        outgoing = self.read_struct_from_file("i")[0]
         size, data = self.read_raw_data()
         return outgoing, size, data
     
@@ -124,26 +108,21 @@ class DemoFile(object):
         Reads cmd info, beware: uses splitscreen so 152 bytes instead of 76.
         '''
         fmt = "@iffffffffffffffffffiffffffffffffffffff"  # x2 because of splitscreen
-        return self.read_struct_from_file(fmt)
-        
+        return self.read_struct_from_file(fmt)[0]
+    
     def read_struct_from_file(self, fmt):
         '''
         General method to read and unpack a struct from the buffer.
         Returns the unpacked struct.
         '''
-        self.file.seek(self.offset)
         struct_len = struct.calcsize(fmt)
-        struct_unpack = struct.Struct(fmt)
-        data = self.file.read(struct_len)
-        self.offset = self.offset + struct_len
-        self.file.seek(self.offset)
-        read = struct_unpack.unpack_from(data, 0)
-        return read[0]
+        binary_data = self.file.read(struct_len)
+        unpacked_data = struct.unpack(fmt, binary_data)
+        return unpacked_data
     
     def read_sequence_info(self):
         '''
         Reads sequence info.
         '''
-        seq_nr_in = self.read_struct_from_file("i")
-        seq_nr_out = self.read_struct_from_file("i")
+        seq_nr_in, seq_nr_out = self.read_struct_from_file("ii")
         return seq_nr_in, seq_nr_out

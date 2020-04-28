@@ -1,3 +1,5 @@
 *.pyc
-demos/*.*
+test/
 protobufs/*
+DumpEventList.py
+event_list.txt
